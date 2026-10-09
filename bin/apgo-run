@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# apgo-run DESC CMD · run a leaf's shell command detached. If it exits non-zero within 1.5 s
+# (typo, missing app, not logged in…) → pink pill in the popup + notification + journal (`journalctl -t apgo`).
+# Still running after 1.5 s = a launched app: success, leave it be.
+desc=$1 cmd=$2
+dir=${XDG_RUNTIME_DIR:-/tmp}/apgo; mkdir -p "$dir"; err=$dir/last.err
+shell=$(cd "$(dirname "$(readlink -f "$0")")/../shell" && pwd)
+
+setsid sh -c "$cmd" </dev/null >/dev/null 2>"$err" &
+pid=$!
+for _ in $(seq 15); do
+  kill -0 "$pid" 2>/dev/null || break
+  sleep 0.1
+done
+kill -0 "$pid" 2>/dev/null && exit 0
+wait "$pid"; code=$?
+[ "$code" -eq 0 ] && exit 0
+
+msg=$(grep -v '^\s*$' "$err" | tail -n 1 | cut -c1-160)
+[ -n "$msg" ] || msg="exit $code"
+logger -t apgo "✕ $desc: $cmd → $code: $(tr '\n' ' ' <"$err" | cut -c1-500)"
+qs ipc -p "$shell" call apgo fail "$desc" "$msg" >/dev/null 2>&1
+command -v notify-send >/dev/null && notify-send -a apgo "✕ $desc" "$(head -c 800 "$err")"
+exit "$code"
