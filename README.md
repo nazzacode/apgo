@@ -4,7 +4,7 @@ A leader key for Hyprland. Tap Super, then type a few letters to run anything on
 
 The name is short for *arpeggio*: the notes of a chord played one after another. `Super+Shift+s` is a chord; `␣ c r` is the same command as an arpeggio, and it reads as a phrase: *capture, region*.
 
-Part of [YOTLAND](https://github.com/nazzacode), a keyboard-driven Linux desktop.
+Part of [YOTLAND OS](https://github.com/nazzacode), a keyboard-driven Linux desktop.
 
 ## How it works
 
